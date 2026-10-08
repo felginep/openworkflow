@@ -79,6 +79,23 @@ describe("OpenWorkflow", () => {
           workflow.run({ userId: "not-a-uuid", count: 0 }),
         ).rejects.toThrow();
       });
+
+      test("exposes the schema issues in the error cause", async () => {
+        const backend = await createTestBackend();
+        const client = new OpenWorkflow({ backend });
+        const workflow = client.defineWorkflow(
+          { name: "schema-zod-invalid-cause", schema },
+          noopFn,
+        );
+
+        await expect(
+          workflow.run({ userId: "not-a-uuid", count: 0 }),
+        ).rejects.toMatchObject({
+          cause: {
+            inputValidationIssues: [{ path: ["userId"] }, { path: ["count"] }],
+          },
+        });
+      });
     });
 
     describe("ArkType schema", () => {

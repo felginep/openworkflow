@@ -35,6 +35,7 @@ import type {
   WorkflowFunction,
 } from "../core/workflow-function.js";
 import {
+  createInputValidationError,
   isTerminalStatus,
   validateInput,
   type WorkflowRun,
@@ -711,7 +712,7 @@ class StepExecutor implements StepApi {
       request.input,
     );
     if (!validationResult.success) {
-      throw new Error(validationResult.error);
+      throw createInputValidationError(validationResult);
     }
     const parsedInput = validationResult.value;
 

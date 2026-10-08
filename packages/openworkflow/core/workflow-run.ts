@@ -98,10 +98,36 @@ export type SchemaOutput<TSchema, Fallback> = TSchema extends StandardSchemaV1
 
 /**
  * Result of input validation - either success with a value or failure with an
- * error message.
+ * error message and the original Standard Schema issues.
  */
 export type ValidationResult<T> =
-  { success: true; value: T } | { success: false; error: string };
+  | { success: true; value: T }
+  | {
+      success: false;
+      error: string;
+      issues: readonly StandardSchemaV1.Issue[];
+    };
+
+/**
+ * Build the error thrown when a workflow input fails validation. The original
+ * schema issues are exposed as `cause.inputValidationIssues`.
+ *
+ * The cause is a plain object rather than a dedicated error class on purpose:
+ * it keeps the issues available without adding a new export to the public API.
+ * @param failure - The failed ValidationResult
+ * @param failure.error - Issue messages joined into a single message
+ * @param failure.issues - Original Standard Schema issues
+ * @returns An Error whose message is unchanged and whose cause holds the issues
+ */
+export function createInputValidationError({
+  error,
+  issues,
+}: {
+  error: string;
+  issues: readonly StandardSchemaV1.Issue[];
+}): Error {
+  return new Error(error, { cause: { inputValidationIssues: issues } });
+}
 
 /**
  * Validate input against a Standard Schema. Pure async function that validates
@@ -110,7 +136,7 @@ export type ValidationResult<T> =
  * for no validation)
  * @param input - The input value to validate
  * @returns A ValidationResult containing either the validated value or an error
- * message
+ * message along with the original schema issues
  */
 export async function validateInput<RunInput, Input>(
   schema: StandardSchemaV1<RunInput, Input> | null | undefined,
@@ -137,6 +163,7 @@ export async function validateInput<RunInput, Input>(
     return {
       success: false,
       error: messages,
+      issues: resolved.issues,
     };
   }
 
