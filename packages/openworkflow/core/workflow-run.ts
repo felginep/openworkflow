@@ -109,6 +109,27 @@ export type ValidationResult<T> =
     };
 
 /**
+ * Build the error thrown when a workflow input fails validation. The original
+ * schema issues are exposed as `cause.inputValidationIssues`.
+ *
+ * The cause is a plain object rather than a dedicated error class on purpose:
+ * it keeps the issues available without adding a new export to the public API.
+ * @param failure - The failed ValidationResult
+ * @param failure.error - Issue messages joined into a single message
+ * @param failure.issues - Original Standard Schema issues
+ * @returns An Error whose message is unchanged and whose cause holds the issues
+ */
+export function createInputValidationError({
+  error,
+  issues,
+}: {
+  error: string;
+  issues: readonly StandardSchemaV1.Issue[];
+}): Error {
+  return new Error(error, { cause: { inputValidationIssues: issues } });
+}
+
+/**
  * Validate input against a Standard Schema. Pure async function that validates
  * input and returns a ValidationResult.
  * @param schema - The Standard Schema to validate against (or null/undefined

@@ -153,14 +153,21 @@ try {
 }
 ```
 
-The thrown error's `message` joins the issue messages. Its `cause` is the array
-of Standard Schema issues returned by your schema, so you can read each issue's
-`path` and `message`:
+The thrown error's `message` joins the issue messages. Its `cause` is an object
+whose `inputValidationIssues` property holds the Standard Schema issues returned
+by your schema, so you can read each issue's `path` and `message`:
 
 ```ts
-if (error instanceof Error && Array.isArray(error.cause)) {
-  for (const issue of error.cause) {
-    console.error(issue.path, issue.message);
-  }
+if (
+  error instanceof Error &&
+  typeof error.cause === "object" &&
+  error.cause !== null &&
+  "inputValidationIssues" in error.cause
+) {
+  console.error(error.cause.inputValidationIssues);
 }
 ```
+
+The issues are exposed through `cause` instead of a dedicated error class so the
+public API of OpenWorkflow does not grow. `Error.cause` is typed as `unknown`,
+so narrow it before reading `inputValidationIssues`.

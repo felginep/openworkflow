@@ -2,6 +2,7 @@ import type { StandardSchemaV1 } from "./standard-schema.js";
 import {
   isTerminalStatus,
   resolveCancelWorkflowRunConflict,
+  createInputValidationError,
   validateInput,
 } from "./workflow-run.js";
 import type { WorkflowRun, WorkflowRunStatus } from "./workflow-run.js";
@@ -18,6 +19,21 @@ describe("isTerminalStatus", () => {
     ["canceled", true],
   ])("returns %s for status '%s'", (status, expected) => {
     expect(isTerminalStatus(status)).toBe(expected);
+  });
+});
+
+describe("createInputValidationError", () => {
+  test("keeps the message and exposes the issues in the cause", () => {
+    const issues = [{ message: "Invalid email format", path: ["email"] }];
+
+    const error = createInputValidationError({
+      error: "Invalid email format",
+      issues,
+    });
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.message).toBe("Invalid email format");
+    expect(error.cause).toEqual({ inputValidationIssues: issues });
   });
 });
 

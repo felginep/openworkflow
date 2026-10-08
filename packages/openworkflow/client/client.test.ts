@@ -80,7 +80,7 @@ describe("OpenWorkflow", () => {
         ).rejects.toThrow();
       });
 
-      test("keeps the schema issues as the error cause", async () => {
+      test("exposes the schema issues in the error cause", async () => {
         const backend = await createTestBackend();
         const client = new OpenWorkflow({ backend });
         const workflow = client.defineWorkflow(
@@ -91,7 +91,9 @@ describe("OpenWorkflow", () => {
         await expect(
           workflow.run({ userId: "not-a-uuid", count: 0 }),
         ).rejects.toMatchObject({
-          cause: [{ path: ["userId"] }, { path: ["count"] }],
+          cause: {
+            inputValidationIssues: [{ path: ["userId"] }, { path: ["count"] }],
+          },
         });
       });
     });

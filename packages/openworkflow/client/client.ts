@@ -15,7 +15,10 @@ import type {
   SchemaOutput,
   WorkflowRun,
 } from "../core/workflow-run.js";
-import { validateInput } from "../core/workflow-run.js";
+import {
+  createInputValidationError,
+  validateInput,
+} from "../core/workflow-run.js";
 import {
   ATTRIBUTE_NAMES,
   getSpanKind,
@@ -118,9 +121,7 @@ export class OpenWorkflow {
       async (span) => {
         const validationResult = await validateInput(spec.schema, input);
         if (!validationResult.success) {
-          throw new Error(validationResult.error, {
-            cause: validationResult.issues,
-          });
+          throw createInputValidationError(validationResult);
         }
         const parsedInput = validationResult.value;
         const availableAt = resolveAvailableAt(options?.availableAt);
