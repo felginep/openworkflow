@@ -108,6 +108,10 @@ describe("validateInput", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error).toBe("Invalid email format; Age must be positive");
+      expect(result.issues).toEqual([
+        { message: "Invalid email format" },
+        { message: "Age must be positive" },
+      ]);
     }
   });
 

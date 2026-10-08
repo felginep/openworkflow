@@ -711,7 +711,9 @@ class StepExecutor implements StepApi {
       request.input,
     );
     if (!validationResult.success) {
-      throw new Error(validationResult.error);
+      throw new Error(validationResult.error, {
+        cause: validationResult.issues,
+      });
     }
     const parsedInput = validationResult.value;
 

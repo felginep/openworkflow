@@ -152,3 +152,15 @@ try {
   console.error("Validation failed:", error);
 }
 ```
+
+The thrown error's `message` joins the issue messages. Its `cause` is the array
+of Standard Schema issues returned by your schema, so you can read each issue's
+`path` and `message`:
+
+```ts
+if (error instanceof Error && Array.isArray(error.cause)) {
+  for (const issue of error.cause) {
+    console.error(issue.path, issue.message);
+  }
+}
+```
